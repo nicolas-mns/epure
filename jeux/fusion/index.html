@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Fusion · Epure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../commun/css/base.css?v=2">
+    <link rel="stylesheet" href="../../commun/css/shell.css?v=2">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="../../commun/css/themes.css?v=2">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="../../" title="Retour à Epure"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Fusion</a>
+        <div class="spacer"></div>
+        <a class="icon-btn hidden" id="account-btn" href="../../pages/account.html" title="Compte"><i data-icon="circle-user"></i></a>
+        <button class="icon-btn" data-action="toggle-sound" id="sound-btn" title="Son"></button>
+        <button class="icon-btn" data-action="open-help" title="Contrôles"><i data-icon="keyboard"></i></button>
+        <a class="icon-btn" href="../../pages/stats.html" title="Statistiques"><i data-icon="chart-column"></i></a>
+        <button class="icon-btn" data-action="open-settings" title="Thème"><i data-icon="palette"></i></button>
+    </header>
+
+    <div class="app">
+        <nav class="side">
+            <p class="section-title">Modes</p>
+            <button class="mode-item" data-mode="classic"><i data-icon="grid-2x2"></i><span>Classique 4×4</span></button>
+            <button class="mode-item" data-mode="big"><i data-icon="grid-3x3"></i><span>Grand 5×5</span></button>
+            <button class="mode-item" data-mode="mini"><i data-icon="square"></i><span>Mini 3×3</span></button>
+            <button class="mode-item" data-mode="timed"><i data-icon="timer"></i><span>Chrono 3 min</span></button>
+            <button class="mode-item" data-mode="blocks"><i data-icon="square-x"></i><span>Obstacles</span></button>
+        </nav>
+
+        <main class="content">
+            <section id="screen-setup" class="screen active">
+                <div class="setup card">
+                    <div class="setup-head">
+                        <span class="setup-icon" id="setup-icon"></span>
+                        <div><h2 id="setup-title"></h2><p class="muted" id="setup-desc"></p></div>
+                    </div>
+                    <ul class="rules" id="setup-rules"></ul>
+                    <div class="setup-best muted" id="setup-best"></div>
+                    <button class="btn primary block" data-action="play"><i data-icon="play"></i> Jouer</button>
+                </div>
+            </section>
+
+            <section id="screen-game" class="screen">
+                <div class="fz-top">
+                    <button class="icon-btn" data-action="quit" title="Retour"><i data-icon="arrow-left"></i></button>
+                    <div class="fz-title" id="fz-title"></div>
+                    <div class="fz-scores">
+                        <div class="chip"><small>Score</small><b id="fz-score">0</b></div>
+                        <div class="chip"><small>Record</small><b id="fz-best">0</b></div>
+                        <div class="chip hidden" id="chip-time"><small>Temps</small><b id="fz-time">3:00</b></div>
+                    </div>
+                    <button class="icon-btn" data-action="undo" id="undo-btn" title="Annuler le dernier coup (U)"><i data-icon="undo-2"></i><span class="undo-n" id="undo-n">3</span></button>
+                    <button class="icon-btn" data-action="restart" title="Recommencer (R)"><i data-icon="rotate-ccw"></i></button>
+                </div>
+                <div class="fz-board" id="fz-board"><div class="fz-cells" id="fz-cells"></div><div class="fz-tiles" id="fz-tiles"></div></div>
+                <p class="fz-hint muted">Flèches, ZQSD ou glisser pour faire bouger toutes les tuiles.</p>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal hidden" id="modal">
+        <div class="modal-card">
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
+            <div class="modal-actions" id="modal-actions"></div>
+        </div>
+    </div>
+    <div class="modal hidden" id="settings">
+        <div class="modal-card">
+            <h2>Thème</h2>
+            <div class="themes" id="themes"></div>
+            <div class="modal-actions"><button class="btn primary" data-action="close-modal">Fermer</button></div>
+        </div>
+    </div>
+    <div class="modal hidden" id="help">
+        <div class="modal-card help">
+            <h2>Comment jouer</h2>
+            <p>Chaque coup fait glisser toutes les tuiles dans une direction. Deux tuiles de même valeur qui se touchent fusionnent et s'additionnent. Une nouvelle tuile apparaît après chaque coup.</p>
+            <table class="keys">
+                <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Faire glisser</td></tr>
+                <tr><td><kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd></td><td>Faire glisser (AZERTY)</td></tr>
+                <tr><td><kbd>U</kbd></td><td>Annuler le dernier coup</td></tr>
+                <tr><td><kbd>R</kbd></td><td>Recommencer</td></tr>
+            </table>
+            <div class="modal-actions"><button class="btn primary" data-action="close-modal">Compris</button></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="../../commun/js/config.js?v=2"></script>
+    <script src="../../commun/js/i18n.js?v=2"></script>
+    <script src="../../commun/js/ui.js?v=2"></script>
+    <script src="../../commun/js/online.js?v=2"></script>
+    <script src="game.js?v=2"></script>
+</body>
+</html>

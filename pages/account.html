@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compte · Epure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../commun/css/base.css?v=2">
+    <link rel="stylesheet" href="../commun/css/themes.css?v=2">
+    <style>
+        main { max-width: 420px; margin: 0 auto; padding: 48px 20px; }
+        .box { padding: 24px; }
+        h1 { font-size: 1.4rem; margin-bottom: 4px; display: flex; gap: 10px; align-items: center; }
+        .lead { color: var(--muted); margin-bottom: 20px; font-size: .92rem; line-height: 1.5; }
+        .tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: var(--radius); margin-bottom: 18px; }
+        .tabs button { flex: 1; padding: 8px; border-radius: calc(var(--radius) - 2px); font-weight: 600; color: var(--muted); }
+        .tabs button.active { background: var(--surface); color: var(--text); }
+        form { display: flex; flex-direction: column; gap: 12px; }
+        label { display: flex; flex-direction: column; gap: 6px; font-size: .85rem; font-weight: 500; }
+        input { height: 40px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); outline: none; }
+        input:focus { border-color: var(--muted); }
+        .msg { font-size: .88rem; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); }
+        .msg.err { color: var(--danger); }
+        .profile { display: flex; flex-direction: column; gap: 14px; }
+        .row { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; }
+        .row b { color: var(--text); }
+        .me-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .me-stats div { background: var(--surface-2); border-radius: var(--radius); padding: 12px 8px; text-align: center; }
+        .me-stats b { display: block; font-family: var(--mono); font-size: 1.25rem; }
+        .me-stats small { color: var(--muted); font-size: .75rem; }
+        .note { color: var(--muted); font-size: .8rem; line-height: 1.45; }
+        .note:empty { display: none; }
+        .btn.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
+        .btn.danger:hover { background: color-mix(in srgb, var(--danger) 12%, var(--surface-2)); }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="../"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Compte</a>
+    </header>
+    <main>
+        <div class="card box hidden" id="offline">
+            <h1><i data-icon="cloud-off"></i> Hors ligne</h1>
+            <p class="lead">Les comptes ne sont pas encore activés sur ce site : renseigne <code>../commun/js/config.js</code> avec les infos de ton projet Supabase.</p>
+        </div>
+
+        <div class="card box hidden" id="auth">
+            <h1>Compte</h1>
+            <p class="lead">Tes stats te suivent sur tous tes appareils, et tu apparais dans les classements et en duel. Juste un pseudo et un mot de passe, aucun e-mail.</p>
+            <div class="tabs"><button class="active" data-tab="login">Connexion</button><button data-tab="signup">Inscription</button></div>
+            <form id="form">
+                <label id="f-user"><span id="f-user-label">Pseudo</span><input name="username" required maxlength="80" autocomplete="username"></label>
+                <label>Mot de passe<input name="password" type="password" minlength="6" required autocomplete="current-password"></label>
+                <div class="msg hidden" id="msg"></div>
+                <button class="btn primary block" id="submit">Se connecter</button>
+            </form>
+        </div>
+
+        <div class="card box hidden" id="me">
+            <div class="profile">
+                <h1><i data-icon="circle-user"></i> <span id="me-name"></span></h1>
+                <div class="row hidden" id="me-email-row"><span>E-mail</span><b id="me-email"></b></div>
+                <div class="row"><span>Membre depuis</span><b id="me-since">…</b></div>
+                <div class="me-stats">
+                    <div><b id="me-games">…</b><small>parties</small></div>
+                    <div><b id="me-wins">…</b><small>victoires</small></div>
+                    <div><b id="me-fav">…</b><small>jeu favori</small></div>
+                </div>
+                <p class="note" id="me-note"></p>
+                <a class="btn block" href="stats.html"><i data-icon="chart-column"></i> Mes statistiques</a>
+                <button class="btn block" id="logout"><i data-icon="log-out"></i> Se déconnecter</button>
+                <button class="btn block danger" id="delete"><i data-icon="trash-2"></i> Supprimer mon compte</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="../commun/js/config.js?v=2"></script>
+    <script src="../commun/js/i18n.js?v=2"></script>
+    <script src="../commun/js/ui.js?v=2"></script>
+    <script src="../commun/js/online.js?v=2"></script>
+    <script>
+        applyTheme(settings.theme);
+        hydrateIcons();
+        let tab = 'login';
+        const msg = (t, err) => { const m = $('#msg'); m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); };
+        $$('.tabs button').forEach(b => b.onclick = () => {
+            tab = b.dataset.tab;
+            $$('.tabs button').forEach(x => x.classList.toggle('active', x === b));
+            $('#f-user-label').textContent = tab === 'signup' ? 'Pseudo' : 'Pseudo (ou e-mail pour un ancien compte)';
+            $('#f-user input').autocomplete = 'username';
+            $('[name=password]').autocomplete = tab === 'signup' ? 'new-password' : 'current-password';
+            $('#submit').textContent = tab === 'signup' ? 'Créer mon compte' : 'Se connecter';
+            $('#msg').classList.add('hidden');
+        });
+        $('#form').onsubmit = async e => {
+            e.preventDefault();
+            const f = new FormData(e.target);
+            $('#submit').disabled = true;
+            try {
+                if (tab === 'signup') {
+                    const user = f.get('username').trim();
+                    if (!/^[\w.-]{3,20}$/.test(user)) throw new Error('Pseudo : 3 à 20 caractères (lettres, chiffres, . _ -)');
+                    const res = await Online.signUp(user, f.get('password'));
+                    if (!res.session) msg('Compte créé, mais la confirmation par e-mail est encore activée côté Supabase : désactive « Confirm email ».', true);
+                } else await Online.signIn(f.get('username'), f.get('password'));
+            } catch (err) {
+                const t = err.message || String(err);
+                msg(/Invalid login/i.test(t) ? 'Pseudo ou mot de passe incorrect.' : /banned/i.test(t) ? 'Ce compte a été désactivé par un administrateur.' : /already registered/i.test(t) ? 'Ce pseudo est déjà pris.' : /duplicate|unique|Database error saving/i.test(t) ? 'Ce pseudo est déjà pris.' : t, true);
+            }
+            $('#submit').disabled = false;
+        };
+        $('#logout').onclick = () => Online.signOut();
+        $('#delete').onclick = async () => {
+            const name = Online.username;
+            const typed = prompt(`Supprimer définitivement le compte « ${name} » et toutes ses parties en ligne ?
+Cette action est irréversible.
+
+Tape ton pseudo pour confirmer :`);
+            if (typed === null) return;
+            if (typed.trim() !== name) { toast('Pseudo incorrect, rien n\'a été supprimé', 'circle-x'); return; }
+            try { await Online.deleteAccount(); toast('Compte supprimé', 'check'); }
+            catch (err) { toast('Erreur : ' + (err.message || err), 'circle-x', 4000); }
+        };
+        Online.onChange(async o => {
+            $('#offline').classList.toggle('hidden', o.configured);
+            $('#auth').classList.toggle('hidden', !o.configured || !!o.user);
+            $('#me').classList.toggle('hidden', !o.user);
+            if (o.user) {
+                $('#me-name').textContent = o.username || '';
+                const real = !Online.isPseudoEmail(o.user.email);
+                $('#me-email-row').classList.toggle('hidden', !real);
+                $('#me-email').textContent = real ? o.user.email : '';
+                const n = await o.syncLocal();
+                if (n) toast(`${n} parties locales envoyées sur ton compte`, 'cloud-upload');
+                $('#me-since').textContent = new Date(o.user.created_at).toLocaleDateString(settings.lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+                if (n) $('#me-note').textContent = `Tes ${n} parties jouées avant la connexion sur ce navigateur ont été ajoutées à ton compte.`;
+                const { data: rows } = await o.client.from('games').select('game,won').eq('user_id', o.user.id).limit(10000);
+                const g = rows || [], names = { demineur: 'Démineur', blocs: 'Blocs', serpent: 'Serpent', fusion: 'Fusion' }, per = {};
+                g.forEach(x => { per[x.game] = (per[x.game] || 0) + 1; });
+                const fav = Object.entries(per).sort((a, b) => b[1] - a[1])[0];
+                $('#me-games').textContent = g.length;
+                $('#me-wins').textContent = g.filter(x => x.won).length;
+                $('#me-fav').textContent = fav ? names[fav[0]] || fav[0] : '—';
+            }
+        });
+    </script>
+</body>
+</html>

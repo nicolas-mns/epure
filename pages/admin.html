@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration · Epure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../commun/css/base.css?v=2">
+    <link rel="stylesheet" href="../commun/css/themes.css?v=2">
+    <style>
+        main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+        h1 { font-size: 1.6rem; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+        .lead { color: var(--muted); margin-bottom: 24px; }
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 28px; }
+        .kpi { padding: 16px; }
+        .kpi small { color: var(--muted); font-size: .8rem; display: flex; align-items: center; gap: 6px; }
+        .kpi b { display: block; font-family: var(--mono); font-size: 1.6rem; margin-top: 6px; }
+        .table-card { overflow-x: auto; margin-bottom: 28px; }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+        th { text-align: left; font-weight: 600; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        tr:last-child td { border-bottom: 0; }
+        .num { font-family: var(--mono); text-align: right; }
+        .badge { font-size: .7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); margin-left: 6px; }
+        .acts { display: flex; gap: 2px; justify-content: flex-end; }
+        .acts .icon-btn { width: 30px; height: 30px; }
+        .acts .icon-btn.del:hover { color: var(--danger); }
+        .denied { padding: 40px; text-align: center; color: var(--muted); }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .toolbar input { height: 36px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); flex: 1; max-width: 300px; }
+        .bars { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .bar-row { display: grid; grid-template-columns: 120px 1fr 50px; gap: 10px; align-items: center; font-size: .88rem; }
+        .bar { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+        .bar-game { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: 6px; }
+        .bar-game:first-child { margin-top: 0; }
+        .toolbar select { height: 36px; padding: 0 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
+        .badge.off { background: var(--danger); color: #fff; }
+        tr.banned td { opacity: .55; }
+        tr.banned td:last-child { opacity: 1; }
+        .crown-inline { color: #e8b923; display: inline-flex; vertical-align: -2px; margin-right: 5px; }
+        .crown-inline svg { width: 14px; height: 14px; fill: currentColor; }
+        .bar i { display: block; height: 100%; background: var(--accent); }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="../"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Administration</a>
+        <div class="spacer"></div>
+        <a class="icon-btn hidden" id="account-btn" href="account.html" title="Compte"><i data-icon="circle-user"></i></a>
+    </header>
+    <main>
+        <div id="denied" class="card denied">Chargement…</div>
+        <div id="panel" class="hidden">
+            <h1><i data-icon="shield-check"></i> Administration</h1>
+            <p class="lead">Comptes et activité d'Epure. Visible uniquement par les admins.</p>
+            <div class="kpis" id="kpis"></div>
+            <p class="section-title">Parties par mode</p>
+            <div class="card bars" id="modes" style="margin-bottom:28px"></div>
+            <p class="section-title">Comptes</p>
+            <div class="toolbar"><input id="search" placeholder="Rechercher un pseudo"><select id="filter"><option value="all">Tous</option><option value="active">Actifs</option><option value="banned">Désactivés</option><option value="admin">Admins</option></select><button class="btn" id="refresh"><i data-icon="refresh-cw"></i> Actualiser</button></div>
+            <div class="card table-card" id="users"></div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="../commun/js/config.js?v=2"></script>
+    <script src="../commun/js/i18n.js?v=2"></script>
+    <script src="../commun/js/ui.js?v=2"></script>
+    <script src="../commun/js/online.js?v=2"></script>
+    <script>
+        applyTheme(settings.theme);
+        hydrateIcons();
+        const MODES = {
+            Démineur: { game: 'demineur', modes: { classic: 'Classique', puzzle: 'Puzzles', mega: 'MegaMines', rainbow: 'Arc-en-ciel', economy: 'Économie', blitz: 'Blitz', survival: 'Survie', duel: 'Duel' } },
+            Blocs: { game: 'blocs', modes: { marathon: 'Marathon', sprint: 'Sprint 40', ultra: 'Ultra', rising: 'Montée', versus: 'Duel' } },
+            Serpent: { game: 'serpent', modes: { classic: 'Classique', wrap: 'Sans murs', maze: 'Labyrinthe', timed: 'Chrono' } },
+            Fusion: { game: 'fusion', modes: { classic: 'Classique', big: 'Grand 5×5', mini: 'Mini 3×3', timed: 'Chrono', blocks: 'Obstacles' } },
+        };
+        let filter = 'all';
+        let users = [];
+        const date = d => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+        const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        async function load() {
+            const c = Online.client;
+            const [{ data: list, error }, { data: games }] = await Promise.all([
+                c.rpc('admin_list_users'),
+                c.from('games').select('game,mode,won,created_at').order('created_at', { ascending: false }).limit(5000),
+            ]);
+            if (error) { toast(error.message, 'circle-x', 4000); return; }
+            users = list || [];
+            const g = games || [];
+            const day = Date.now() - 864e5, week = Date.now() - 7 * 864e5;
+            const k = [
+                ['Comptes', 'users', users.length],
+                ['Désactivés', 'user-x', users.filter(u => u.banned).length],
+                ['Actifs (7 j)', 'activity', users.filter(u => u.last_sign_in_at && new Date(u.last_sign_in_at) > week).length],
+                ['Parties', 'gamepad-2', g.length],
+                ['Parties (24 h)', 'clock', g.filter(x => new Date(x.created_at) > day).length],
+                ['Taux de victoire', 'percent', g.length ? Math.round(g.filter(x => x.won).length / g.length * 100) + ' %' : '—'],
+            ];
+            $('#kpis').innerHTML = k.map(([l, ic, v]) => `<div class="card kpi"><small>${icon(ic)}${l}</small><b>${v}</b></div>`).join('');
+            const counts = {};
+            g.forEach(x => { const key = x.game + ':' + x.mode; counts[key] = (counts[key] || 0) + 1; });
+            const max = Math.max(1, ...Object.values(counts));
+            $('#modes').innerHTML = Object.entries(MODES).map(([name, { game, modes }]) => `<p class="bar-game">${name}</p>` + Object.keys(modes).map(m => { const n = counts[game + ':' + m] || 0; return `<div class="bar-row"><span>${modes[m]}</span><span class="bar"><i style="width:${n / max * 100}%"></i></span><span class="num">${n}</span></div>`; }).join('')).join('');
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const q = $('#search').value.trim().toLowerCase();
+            const list = users.filter(u => (!q || (u.username || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q))
+                && (filter === 'all' || (filter === 'admin' && u.is_admin) || (filter === 'banned' && u.banned) || (filter === 'active' && !u.banned)));
+            if (!list.length) { $('#users').innerHTML = '<p class="denied">Aucun compte.</p>'; return; }
+            $('#users').innerHTML = `<table><thead><tr><th>Pseudo</th><th>E-mail</th><th class="num">Parties</th><th class="num">Victoires</th><th>Inscrit</th><th>Dernière connexion</th><th></th></tr></thead><tbody>${list.map(u => {
+                const me = u.id === Online.user.id;
+                const mail = Online.isPseudoEmail(u.email) ? '—' : esc(u.email);
+                return `<tr class="${u.banned ? 'banned' : ''}"><td>${u.is_admin ? `<span class="crown-inline" title="Admin">${icon('crown')}</span>` : ''}${esc(u.username)}${u.is_admin ? '<span class="badge">ADMIN</span>' : ''}${u.banned ? '<span class="badge off">DÉSACTIVÉ</span>' : ''}</td><td class="muted">${mail}</td><td class="num">${u.games}</td><td class="num">${u.wins}</td><td>${date(u.created_at)}</td><td>${date(u.last_sign_in_at)}</td>
+                <td><div class="acts">
+                    ${me ? '' : `<button class="icon-btn" data-act="admin" data-id="${u.id}" title="${u.is_admin ? 'Retirer le rôle admin' : 'Rendre admin'}">${icon(u.is_admin ? 'shield-minus' : 'shield-plus')}</button>`}
+                    <button class="icon-btn" data-act="rename" data-id="${u.id}" title="Renommer">${icon('pencil')}</button>
+                    ${me ? '' : `<button class="icon-btn ${u.banned ? '' : 'del'}" data-act="ban" data-id="${u.id}" title="${u.banned ? 'Réactiver le compte' : 'Désactiver le compte (ban)'}">${icon(u.banned ? 'user-check' : 'user-x')}</button>`}
+                    <button class="icon-btn" data-act="reset" data-id="${u.id}" title="Effacer ses parties">${icon('eraser')}</button>
+                    ${me ? '' : `<button class="icon-btn del" data-act="delete" data-id="${u.id}" title="Supprimer le compte">${icon('trash-2')}</button>`}
+                </div></td></tr>`;
+            }).join('')}</tbody></table>`;
+            $$('[data-act]').forEach(b => b.onclick = () => act(b.dataset.act, b.dataset.id));
+        }
+
+        async function act(kind, id) {
+            const u = users.find(x => x.id === id), c = Online.client;
+            let res;
+            if (kind === 'admin') res = await c.rpc('admin_set_admin', { target: id, value: !u.is_admin });
+            if (kind === 'rename') { const n = prompt(`Nouveau pseudo pour « ${u.username} » (3 à 20 caractères : lettres, chiffres, . _ -)`, u.username); if (!n || n.trim() === u.username) return; res = await c.rpc('admin_rename_user', { target: id, new_name: n.trim() }); }
+            if (kind === 'ban') { if (!u.banned && !confirm(`Désactiver le compte « ${u.username} » ? Il sera déconnecté et ne pourra plus se connecter ni enregistrer de parties.`)) return; res = await c.rpc('admin_set_banned', { target: id, value: !u.banned }); }
+            if (kind === 'reset') { if (!confirm(`Effacer les ${u.games} parties de « ${u.username} » ? Irréversible.`)) return; res = await c.rpc('admin_reset_games', { target: id }); }
+            if (kind === 'delete') { if (!confirm(`Supprimer définitivement le compte « ${u.username} » (${u.email}) et ses parties ? Irréversible.`)) return; res = await c.rpc('admin_delete_user', { target: id }); }
+            if (res && res.error) { toast(/duplicate|unique/i.test(res.error.message) ? 'Ce pseudo est déjà pris' : res.error.message, 'circle-x', 4000); return; }
+            toast('Fait', 'check');
+            load();
+        }
+
+        $('#search').oninput = renderUsers;
+        $('#filter').onchange = e => { filter = e.target.value; renderUsers(); };
+        $('#refresh').onclick = load;
+        Online.onChange(o => {
+            if (!o.configured) { $('#denied').textContent = 'Mode en ligne non configuré.'; return; }
+            if (!o.user) { $('#denied').innerHTML = '<a href="account.html"><b>Connecte-toi</b></a> avec un compte admin.'; $('#panel').classList.add('hidden'); $('#denied').classList.remove('hidden'); return; }
+            if (!o.isAdmin) { $('#denied').textContent = 'Accès réservé aux admins.'; $('#panel').classList.add('hidden'); $('#denied').classList.remove('hidden'); return; }
+            $('#denied').classList.add('hidden'); $('#panel').classList.remove('hidden');
+            load();
+        });
+    </script>
+</body>
+</html>

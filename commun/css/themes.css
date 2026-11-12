@@ -1,0 +1,140 @@
+/* ==================== Mise en page commune ==================== */
+h1, h2, h3, .brand, .section-title, .setup-head h2 { font-family: var(--display, var(--font)); }
+/* Les écrans de configuration sont centrés au lieu d'être collés en haut à gauche */
+.content > .screen > .setup { margin: 5vh auto 0; max-width: 620px; padding: 32px; }
+.content > .screen > .setup .setup-icon { width: 52px; height: 52px; }
+.content > .screen > .setup .setup-head h2 { font-size: 1.5rem; }
+.content > .screen > .setup .btn.primary { height: 46px; font-size: 1rem; }
+.lang-btn { font-family: var(--mono); font-size: .75rem; font-weight: 700; width: auto !important; padding: 0 8px; }
+
+/* ==================== Thèmes supplémentaires ==================== */
+[data-theme="terminal"] { --font: 'VT323', 'JetBrains Mono', monospace; --mono: 'VT323', monospace; }
+body[data-theme="terminal"] { font-size: 18px; }
+
+/* ----- Far West ----- */
+[data-theme="farwest"] {
+    --bg: #e8d5ae; --surface: #f1e2c0; --surface-2: #e2cb9b; --surface-3: #d4b47c; --border: #a9844f;
+    --text: #3a2312; --muted: #7a5a38; --accent: #7a2e12; --accent-ink: #f6ead0;
+    --danger: #a11d0b; --ok: #4f6b1f; --warn: #b57a14;
+    --cell: #c89f63; --cell-hover: #d4ad73; --cell-open: #f4e6c6; --cell-line: #dcc395;
+    --n1:#1f4e8c; --n2:#3c6b1d; --n3:#a11d0b; --n4:#4b2a7a; --n5:#7a2e12; --n6:#1d6b63; --n7:#3a2312; --n8:#7a5a38;
+    --font: 'Special Elite', 'Courier New', monospace; --display: 'Rye', serif; --mono: 'Special Elite', monospace; --radius: 2px;
+    color-scheme: light;
+}
+body[data-theme="farwest"] { background: radial-gradient(ellipse at 50% 0%, #f3e3bf 0%, #e3cc9c 60%, #cfae74 100%) fixed; }
+[data-theme="farwest"] .topbar { background: #4a2c17; color: #f1e2c0; border-bottom: 3px double #2b170a; }
+[data-theme="farwest"] .topbar .icon-btn { color: #e2cb9b; }
+[data-theme="farwest"] .topbar .icon-btn:hover { background: #6b4022; color: #fff; }
+[data-theme="farwest"] .card, [data-theme="farwest"] .modal-card { border: 2px solid #7a5a38; box-shadow: 4px 4px 0 rgba(58,35,18,.35); }
+/* Les fenêtres de fin de partie deviennent des affiches WANTED */
+[data-theme="farwest"] #modal .modal-card { position: relative; text-align: center; padding-top: 80px; padding-bottom: 58px; background: #f3e1b6 radial-gradient(circle at 20% 30%, rgba(122,46,18,.08), transparent 40%); border: 3px solid #3a2312; outline: 2px solid #3a2312; outline-offset: -9px; }
+[data-theme="farwest"] #modal .modal-card::before { content: 'WANTED'; position: absolute; top: 18px; left: 0; right: 0; font-family: 'Rye', serif; font-size: 2.6rem; letter-spacing: .12em; color: #3a2312; }
+[data-theme="farwest"] #modal .modal-card::after { content: 'DEAD OR ALIVE'; position: absolute; bottom: 20px; left: 0; right: 0; font-family: 'Rye', serif; font-size: 1.05rem; letter-spacing: .3em; color: #7a2e12; }
+[data-theme="farwest"] #modal h2 { justify-content: center; font-size: 1.5rem; }
+[data-theme="farwest"] .btn.primary { background: #7a2e12; border-color: #3a2312; color: #f6ead0; }
+
+/* ----- Arcade 8-bit ----- */
+[data-theme="arcade"] {
+    --bg: #0d0221; --surface: #150530; --surface-2: #1f0a40; --surface-3: #2b1155; --border: #3b1a6e;
+    --text: #f5f3ff; --muted: #a78bfa; --accent: #ff2a6d; --accent-ink: #0d0221;
+    --danger: #ff2a6d; --ok: #05d9e8; --warn: #fdf500;
+    --cell: #241046; --cell-hover: #33175f; --cell-open: #0d0221; --cell-line: #1a0838;
+    --n1:#05d9e8; --n2:#7cff4f; --n3:#ff2a6d; --n4:#d300c5; --n5:#fdf500; --n6:#00ffc3; --n7:#fff; --n8:#a78bfa;
+    --font: 'VT323', monospace; --display: 'Press Start 2P', monospace; --mono: 'VT323', monospace; --radius: 0;
+}
+body[data-theme="arcade"] { font-size: 19px; background: #0d0221 repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 2px, transparent 2px 4px); }
+[data-theme="arcade"] h1, [data-theme="arcade"] h2, [data-theme="arcade"] .brand { font-size: .8em; line-height: 1.6; text-shadow: 3px 3px 0 #ff2a6d; }
+[data-theme="arcade"] .card, [data-theme="arcade"] .modal-card { border: 3px solid #05d9e8; box-shadow: 6px 6px 0 #ff2a6d; }
+[data-theme="arcade"] .btn { border-width: 3px; text-transform: uppercase; }
+
+/* ----- Journal ----- */
+[data-theme="journal"] {
+    --bg: #f2eee3; --surface: #f7f4ec; --surface-2: #ebe6d8; --surface-3: #ddd6c4; --border: #1a1a1a;
+    --text: #111; --muted: #555; --accent: #111; --accent-ink: #f7f4ec;
+    --cell: #d6cfbb; --cell-hover: #c9c1aa; --cell-open: #f7f4ec; --cell-line: #e3ddcd;
+    --n1:#111; --n2:#333; --n3:#8b0000; --n4:#111; --n5:#8b0000; --n6:#333; --n7:#111; --n8:#555;
+    --font: 'Source Serif 4', Georgia, serif; --display: 'Playfair Display', Georgia, serif; --radius: 0;
+    color-scheme: light;
+}
+[data-theme="journal"] .topbar { border-bottom: 4px double #111; }
+[data-theme="journal"] .card, [data-theme="journal"] .modal-card { border: 1px solid #111; box-shadow: none; }
+[data-theme="journal"] h1 { font-weight: 900; font-size: 2.4rem; border-bottom: 1px solid #111; padding-bottom: 6px; }
+[data-theme="journal"] .section-title { font-style: italic; text-transform: none; letter-spacing: 0; font-size: .95rem; color: #111; }
+
+/* ----- Cyberpunk ----- */
+[data-theme="cyber"] {
+    --bg: #09000f; --surface: #12021f; --surface-2: #1a0b2e; --surface-3: #261245; --border: #3d1f63;
+    --text: #e8f6ff; --muted: #8f7ab8; --accent: #fcee0a; --accent-ink: #09000f;
+    --danger: #ff003c; --ok: #00f0ff; --warn: #fcee0a;
+    --cell: #1d0b33; --cell-hover: #2b1150; --cell-open: #0b0214; --cell-line: #1a0b2e;
+    --n1:#00f0ff; --n2:#39ff14; --n3:#ff003c; --n4:#c400ff; --n5:#fcee0a; --n6:#00ffaa; --n7:#fff; --n8:#8f7ab8;
+    --font: 'Rajdhani', sans-serif; --display: 'Orbitron', sans-serif; --mono: 'Orbitron', monospace; --radius: 0;
+}
+body[data-theme="cyber"] { font-size: 16px; }
+[data-theme="cyber"] .card, [data-theme="cyber"] .modal-card, [data-theme="cyber"] .btn { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
+[data-theme="cyber"] .card { border-color: #fcee0a55; }
+[data-theme="cyber"] .btn.primary { text-transform: uppercase; letter-spacing: .1em; }
+
+/* ----- Rétro 95 ----- */
+[data-theme="retro95"] {
+    --bg: #008080; --surface: #c0c0c0; --surface-2: #c0c0c0; --surface-3: #dfdfdf; --border: #808080;
+    --text: #000; --muted: #404040; --accent: #000080; --accent-ink: #fff;
+    --danger: #c00; --ok: #008000; --warn: #808000;
+    --cell: #c0c0c0; --cell-hover: #d4d4d4; --cell-open: #bdbdbd; --cell-line: #9a9a9a;
+    --n1:#0000ff; --n2:#008000; --n3:#ff0000; --n4:#000080; --n5:#800000; --n6:#008080; --n7:#000; --n8:#808080;
+    --font: Tahoma, 'MS Sans Serif', Verdana, sans-serif; --mono: 'Courier New', monospace; --radius: 0;
+    color-scheme: light;
+}
+[data-theme="retro95"] .topbar { background: #000080; color: #fff; border: 0; }
+[data-theme="retro95"] .topbar .icon-btn { color: #fff; }
+[data-theme="retro95"] .card, [data-theme="retro95"] .modal-card, [data-theme="retro95"] .btn, [data-theme="retro95"] .chip, [data-theme="retro95"] .panel, [data-theme="retro95"] .well, [data-theme="retro95"] .board {
+    border: 0; border-radius: 0; box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; background: #c0c0c0;
+}
+[data-theme="retro95"] .btn.primary { background: #c0c0c0; color: #000; font-weight: 700; }
+[data-theme="retro95"] .modal-card h2 { background: linear-gradient(90deg, #000080, #1084d0); color: #fff; margin: -24px -24px 14px; padding: 6px 10px; font-size: 1rem; }
+[data-theme="retro95"] .cell { box-shadow: inset -2px -2px #808080, inset 2px 2px #fff; border-radius: 0; }
+[data-theme="retro95"] .cell.open { box-shadow: inset 1px 1px #808080; }
+
+/* ----- Océan ----- */
+[data-theme="ocean"] {
+    --bg: #04202f; --surface: #062b3e; --surface-2: #0b3b52; --surface-3: #124a66; --border: #175675;
+    --text: #e0f7fa; --muted: #80b9c9; --accent: #4fd1c5; --accent-ink: #04202f;
+    --cell: #0e4560; --cell-hover: #145673; --cell-open: #052535; --cell-line: #08304a;
+    --font: 'Nunito', sans-serif; --radius: 12px;
+}
+body[data-theme="ocean"] { background: linear-gradient(180deg, #06324a 0%, #04202f 50%, #021219 100%) fixed; }
+
+/* ----- Bonbon ----- */
+[data-theme="bonbon"] {
+    --bg: #fff0f6; --surface: #ffffff; --surface-2: #ffe3ef; --surface-3: #ffd6e8; --border: #fbb6d0;
+    --text: #5c2a44; --muted: #b0708f; --accent: #e64980; --accent-ink: #fff;
+    --cell: #ffc9de; --cell-hover: #ffb3d0; --cell-open: #fff8fb; --cell-line: #ffe3ef;
+    --n1:#4dabf7; --n2:#51cf66; --n3:#f03e3e; --n4:#9775fa; --n5:#fd7e14; --n6:#20c997; --n7:#5c2a44; --n8:#b0708f;
+    --font: 'Fredoka', sans-serif; --radius: 14px;
+    color-scheme: light;
+}
+
+/* ----- Grimoire (médiéval) ----- */
+[data-theme="medieval"] {
+    --bg: #1c1610; --surface: #261e15; --surface-2: #30261a; --surface-3: #3a2e20; --border: #5a4630;
+    --text: #efe2c4; --muted: #b49a6c; --accent: #c9a24a; --accent-ink: #1c1610;
+    --danger: #b3261e; --ok: #6b8e23;
+    --cell: #3d3022; --cell-hover: #4a3a29; --cell-open: #1f1913; --cell-line: #2b2219;
+    --n1:#6fa8dc; --n2:#93c47d; --n3:#e06666; --n4:#b4a7d6; --n5:#c9a24a; --n6:#76a5af; --n7:#efe2c4; --n8:#b49a6c;
+    --font: 'EB Garamond', Georgia, serif; --display: 'Cinzel', serif; --radius: 4px;
+}
+body[data-theme="medieval"] { font-size: 17px; }
+[data-theme="medieval"] .card, [data-theme="medieval"] .modal-card { border: 1px solid #c9a24a66; box-shadow: inset 0 0 0 4px #1c1610, inset 0 0 0 5px #c9a24a33; }
+
+/* ----- Espace ----- */
+[data-theme="espace"] {
+    --bg: #03040b; --surface: #0a0d1f; --surface-2: #12162b; --surface-3: #1b2140; --border: #262d52;
+    --text: #e6e9ff; --muted: #8b93c7; --accent: #a5b4fc; --accent-ink: #03040b;
+    --cell: #161b38; --cell-hover: #1f2650; --cell-open: #070914; --cell-line: #10142a;
+    --font: 'Space Grotesk', sans-serif;
+}
+body[data-theme="espace"] {
+    background-color: #03040b;
+    background-image: radial-gradient(1px 1px at 10% 20%, #ffffff88, transparent), radial-gradient(1px 1px at 70% 40%, #ffffff66, transparent), radial-gradient(1.5px 1.5px at 40% 80%, #ffffff77, transparent), radial-gradient(1px 1px at 85% 75%, #ffffff55, transparent), radial-gradient(1px 1px at 25% 60%, #ffffff66, transparent);
+    background-size: 300px 300px; background-attachment: fixed;
+}

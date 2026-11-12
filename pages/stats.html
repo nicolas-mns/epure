@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques · Epure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../commun/css/base.css?v=2">
+    <link rel="stylesheet" href="../commun/css/themes.css?v=2">
+    <style>
+        main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 60px; }
+        h1 { font-size: 1.6rem; margin-bottom: 4px; }
+        .lead { color: var(--muted); margin-bottom: 24px; }
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 28px; }
+        .kpi { padding: 16px; }
+        .kpi small { color: var(--muted); font-size: .8rem; display: flex; align-items: center; gap: 6px; }
+        .kpi b { display: block; font-family: var(--mono); font-size: 1.6rem; margin-top: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        th { text-align: left; font-weight: 600; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+        td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+        td.num { font-family: var(--mono); text-align: right; }
+        th.num { text-align: right; }
+        tr:last-child td { border-bottom: 0; }
+        .table-card { overflow-x: auto; margin-bottom: 28px; }
+        .mode-cell { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; width: 80px; display: inline-block; vertical-align: middle; margin-left: 8px; }
+        .bar i { display: block; height: 100%; background: var(--accent); }
+        .won { color: var(--ok); } .lost { color: var(--danger); }
+        .empty { padding: 40px; text-align: center; color: var(--muted); }
+        .online { display: flex; gap: 14px; align-items: flex-start; padding: 18px; margin-bottom: 28px; }
+        .online p { color: var(--muted); font-size: .9rem; line-height: 1.5; margin-top: 4px; }
+        .row-actions { display: flex; justify-content: flex-end; }
+        .gtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+        .gtab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .gtab:hover { color: var(--text); }
+        .gtab.active { color: var(--text); border-bottom-color: var(--text); }
+        .lb-controls { margin-bottom: 10px; }
+        select { height: 36px; padding: 0 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; }
+        .rank { font-family: var(--mono); color: var(--muted); width: 40px; }
+        tr.me td { background: var(--surface-2); }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="../"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Statistiques</a>
+        <div class="spacer"></div>
+        <a class="icon-btn hidden" id="account-btn" href="account.html" title="Compte"><i data-icon="circle-user"></i></a>
+        <a class="icon-btn" href="../jeux/demineur/" title="Démineur"><i data-icon="bomb"></i></a>
+    </header>
+    <main>
+        <h1>Statistiques</h1>
+        <p class="lead">Tes parties, enregistrées sur cet appareil.</p>
+
+        <div class="online card" id="online-card">
+            <i data-icon="users"></i>
+            <div>
+                <b id="online-title">Stats locales</b>
+                <p id="online-text">Les stats restent dans ce navigateur.</p>
+            </div>
+        </div>
+
+        <div id="lb-section" class="hidden">
+            <p class="section-title">Classement en ligne</p>
+            <div class="lb-controls">
+                <select id="lb-mode"></select>
+            </div>
+            <div class="card table-card" id="lb"></div>
+        </div>
+
+        <div class="gtabs" id="game-tabs"></div>
+        <div class="kpis" id="kpis"></div>
+        <p class="section-title">Par mode</p>
+        <div class="card table-card" id="by-mode"></div>
+        <p class="section-title">Dernières parties</p>
+        <div class="card table-card" id="recent"></div>
+        <div class="row-actions"><button class="btn" id="reset"><i data-icon="trash-2"></i> Effacer l'historique</button></div>
+    </main>
+
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="../commun/js/config.js?v=2"></script>
+    <script src="../commun/js/i18n.js?v=2"></script>
+    <script src="../commun/js/ui.js?v=2"></script>
+    <script src="../commun/js/online.js?v=2"></script>
+    <script>
+        const GAMES = {
+            demineur: { name: 'Démineur', icon: 'bomb', href: '../jeux/demineur/', modes: {
+                classic: ['Classique', 'target'], puzzle: ['Puzzles', 'puzzle'], mega: ['MegaMines', 'shapes'], rainbow: ['Arc-en-ciel', 'rainbow'],
+                economy: ['Économie', 'coins'], blitz: ['Blitz', 'zap'], survival: ['Survie', 'shield'], duel: ['Duel', 'swords'] },
+                unit: { economy: 'grilles', blitz: 'pts', survival: 'vagues' },
+                lb: [['classic', 'beginner', 'time', 'Classique · Débutant'], ['classic', 'intermediate', 'time', 'Classique · Intermédiaire'], ['classic', 'expert', 'time', 'Classique · Expert'],
+                    ['rainbow', 'beginner', 'time', 'Arc-en-ciel · Débutant'], ['mega', null, 'time', 'MegaMines'],
+                    ['blitz', null, 'score', 'Blitz (points)'], ['economy', null, 'score', 'Économie (grilles)'], ['survival', null, 'score', 'Survie (vagues)'], ['duel', null, 'wins', 'Duels gagnés']] },
+            blocs: { name: 'Blocs', icon: 'blocks', href: '../jeux/blocs/', modes: {
+                marathon: ['Marathon', 'mountain'], sprint: ['Sprint 40', 'flag'], ultra: ['Ultra 2 min', 'timer'], rising: ['Montée', 'arrow-up-from-line'], versus: ['Duel 1v1', 'swords'] },
+                unit: { marathon: 'pts', ultra: 'pts', rising: 'lignes' },
+                lb: [['sprint', null, 'time', 'Sprint 40 lignes'], ['marathon', null, 'score', 'Marathon (points)'], ['ultra', null, 'score', 'Ultra 2 min (points)'], ['rising', null, 'score', 'Montée (lignes)'], ['versus', null, 'wins', 'Duels gagnés']] },
+            serpent: { name: 'Serpent', icon: 'worm', href: '../jeux/serpent/', modes: {
+                classic: ['Classique', 'square'], wrap: ['Sans murs', 'infinity'], maze: ['Labyrinthe', 'brick-wall'], timed: ['Chrono 90 s', 'timer'] },
+                unit: { classic: 'pts', wrap: 'pts', maze: 'pts', timed: 'pts' },
+                lb: [['classic', null, 'score', 'Classique'], ['wrap', null, 'score', 'Sans murs'], ['maze', null, 'score', 'Labyrinthe'], ['timed', null, 'score', 'Chrono 90 s']] },
+            fusion: { name: 'Fusion', icon: 'grid-2x2', href: '../jeux/fusion/', modes: {
+                classic: ['Classique 4×4', 'grid-2x2'], big: ['Grand 5×5', 'grid-3x3'], mini: ['Mini 3×3', 'square'], timed: ['Chrono 3 min', 'timer'], blocks: ['Obstacles', 'square-x'] },
+                unit: { classic: 'pts', big: 'pts', mini: 'pts', timed: 'pts', blocks: 'pts' },
+                lb: [['classic', null, 'score', 'Classique 4×4'], ['big', null, 'score', 'Grand 5×5'], ['mini', null, 'score', 'Mini 3×3'], ['timed', null, 'score', 'Chrono 3 min'], ['blocks', null, 'score', 'Obstacles']] },
+        };
+        const SUB = { beginner: 'Débutant', intermediate: 'Intermédiaire', expert: 'Expert', custom: 'Perso' };
+        let game = store.get('statsGame', 'demineur');
+        if (!GAMES[game]) game = 'demineur';
+        const fmtT = t => t == null ? '' : t % 1 ? `${fmtTime(t)}.${String(Math.floor((t % 1) * 100)).padStart(2, '0')}` : fmtTime(t);
+
+        function renderTabs() {
+            $('#game-tabs').innerHTML = Object.entries(GAMES).map(([k, g]) => `<button class="gtab ${k === game ? 'active' : ''}" data-g="${k}">${icon(g.icon)}${g.name}</button>`).join('');
+            $$('#game-tabs .gtab').forEach(b => b.onclick = () => { game = b.dataset.g; store.set('statsGame', game); renderTabs(); render(); setupLb(); });
+        }
+
+        function render() {
+            const G = GAMES[game], U = G.unit;
+            const all = Stats.all().filter(e => e.game === game && G.modes[e.mode]);
+            const wins = all.filter(e => e.won).length;
+            const time = all.reduce((a, e) => a + (e.time || 0), 0);
+            let streak = 0, best = 0;
+            all.filter(e => !U[e.mode]).forEach(e => { streak = e.won ? streak + 1 : 0; best = Math.max(best, streak); });
+            const k = [['Parties jouées', 'gamepad-2', all.length], ['Victoires', 'trophy', wins],
+                ['Taux de victoire', 'percent', all.length ? Math.round(wins / all.length * 100) + ' %' : '—'], ['Meilleure série', 'flame', best]];
+            if (game === 'demineur') k.push(['Puzzles résolus', 'puzzle', Object.keys(store.get('puzzles', {})).length]);
+            k.push(['Temps de jeu', 'clock', fmtTime(time)]);
+            $('#kpis').innerHTML = k.map(([l, ic, v]) => `<div class="card kpi"><small>${icon(ic)}${l}</small><b>${v}</b></div>`).join('');
+
+            if (!all.length) {
+                $('#by-mode').innerHTML = `<div class="empty">Aucune partie pour l'instant. <a href="${G.href}"><b>Lance une partie</b></a>.</div>`;
+                $('#recent').innerHTML = `<div class="empty">—</div>`;
+                return;
+            }
+            const rows = Object.entries(G.modes).map(([m, [name, ic]]) => {
+                const list = all.filter(e => e.mode === m);
+                if (!list.length) return '';
+                const w = list.filter(e => e.won).length, rate = Math.round(w / list.length * 100);
+                const times = list.filter(e => e.won && e.time).map(e => e.time);
+                const scores = list.map(e => e.score || 0);
+                const bestV = U[m] ? `${Math.max(...scores).toLocaleString('fr-FR')} ${U[m]}` : times.length ? fmtT(Math.min(...times)) : '—';
+                return `<tr><td><span class="mode-cell">${icon(ic)}${name}</span></td><td class="num">${list.length}</td>
+                    <td class="num">${U[m] ? '—' : `${rate} %<span class="bar"><i style="width:${rate}%"></i></span>`}</td><td class="num">${bestV}</td></tr>`;
+            }).join('');
+            $('#by-mode').innerHTML = `<table><thead><tr><th>Mode</th><th class="num">Parties</th><th class="num">Victoires</th><th class="num">Record</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+            const recent = all.slice(-15).reverse().map(e => {
+                const [name, ic] = G.modes[e.mode];
+                const sub = e.mode === 'puzzle' ? `#${e.sub}` : SUB[e.sub] || '';
+                const res = U[e.mode] ? `${(e.score || 0).toLocaleString('fr-FR')} ${U[e.mode]}` : e.won ? '<span class="won">Victoire</span>' : '<span class="lost">Défaite</span>';
+                return `<tr><td><span class="mode-cell">${icon(ic)}${name} <span class="muted">${sub}</span></span></td><td>${res}</td>
+                    <td class="num">${fmtT(e.time)}</td><td class="num muted">${new Date(e.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td></tr>`;
+            }).join('');
+            $('#recent').innerHTML = `<table><thead><tr><th>Mode</th><th>Résultat</th><th class="num">Temps</th><th class="num">Date</th></tr></thead><tbody>${recent}</tbody></table>`;
+        }
+        applyTheme(settings.theme);
+        hydrateIcons();
+        renderTabs();
+        render();
+        // ----- En ligne -----
+        function setupLb() {
+            $('#lb-mode').innerHTML = GAMES[game].lb.map((l, i) => `<option value="${i}">${l[3]}</option>`).join('');
+            if (Online.configured && Online.client) renderLb();
+        }
+        $('#lb-mode').onchange = renderLb;
+        async function renderLb() {
+            const [mode, sub, kind] = GAMES[game].lb[+$('#lb-mode').value];
+            $('#lb').innerHTML = '<div class="empty">Chargement…</div>';
+            const rows = await Online.leaderboard(game, mode, sub, kind === 'wins' ? 'time' : kind);
+            if (kind === 'wins') rows.sort((a, b) => b.wins - a.wins);
+            if (!rows.length) { $('#lb').innerHTML = '<div class="empty">Personne pour l\'instant. À toi de jouer.</div>'; return; }
+            const val = r => kind === 'time' ? fmtT(r.best_time) : kind === 'wins' ? r.wins : r.best_score.toLocaleString('fr-FR');
+            const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            $('#lb').innerHTML = `<table><thead><tr><th>#</th><th>Joueur</th><th class="num">${kind === 'time' ? 'Meilleur temps' : kind === 'wins' ? 'Victoires' : 'Record'}</th></tr></thead><tbody>${rows.map((r, i) => `<tr class="${r.username === Online.username ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${esc(r.username)}</td><td class="num">${val(r)}</td></tr>`).join('')}</tbody></table>`;
+        }
+        setupLb();
+        Online.onChange(o => {
+            if (!o.configured) { $('#online-title').textContent = 'Stats locales'; $('#online-text').textContent = 'Les stats restent dans ce navigateur. Le mode en ligne n\'est pas encore activé sur ce site.'; return; }
+            $('#lb-section').classList.remove('hidden');
+            setupLb();
+            if (o.user) { $('#online-title').textContent = `Connecté : ${o.username || ''}`; $('#online-text').innerHTML = 'Tes nouvelles parties sont enregistrées sur ton compte et comptent dans le classement.'; }
+            else { $('#online-title').textContent = 'Pas connecté'; $('#online-text').innerHTML = '<a href="account.html"><b>Connecte-toi</b></a> pour apparaître dans le classement et jouer en duel.'; }
+        });
+        $('#reset').onclick = () => { if (confirm(`Effacer l'historique local de ${GAMES[game].name} ?`)) { store.set('history', Stats.all().filter(e => e.game !== game)); render(); } };
+    </script>
+</body>
+</html>

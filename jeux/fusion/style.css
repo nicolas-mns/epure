@@ -1,0 +1,37 @@
+/* ==================== Fusion ==================== */
+.fz-top { display: flex; align-items: center; gap: 10px; max-width: 520px; margin: 0 auto 14px; flex-wrap: wrap; }
+.fz-title { font-weight: 600; flex: 1; font-family: var(--display, var(--font)); }
+.fz-scores { display: flex; gap: 6px; }
+.fz-scores .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 74px; height: 44px; padding: 0 10px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); line-height: 1.1; }
+.fz-scores small { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.fz-scores b { font-family: var(--mono); font-size: 1.05rem; }
+.fz-scores .chip.warn b { color: var(--danger); }
+#undo-btn { position: relative; }
+.undo-n { position: absolute; top: 2px; right: 2px; font-size: .62rem; font-family: var(--mono); color: var(--muted); }
+
+.fz-board { --n: 4; --gap: 10px; --size: min(520px, calc(100vw - 32px), calc(100vh - 230px)); position: relative; width: var(--size); height: var(--size); margin: 0 auto; padding: var(--gap); background: var(--surface); border: 1px solid var(--border); border-radius: calc(var(--radius) + 6px); touch-action: none; user-select: none; }
+.fz-cells, .fz-tiles { position: absolute; inset: var(--gap); }
+.fz-cells { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: var(--gap); }
+.fz-cells div { background: var(--cell); border-radius: var(--radius); }
+.fz-cells div.rock { background: repeating-linear-gradient(45deg, var(--surface-3) 0 6px, var(--border) 6px 12px); }
+.tile { position: absolute; display: grid; place-items: center; border-radius: var(--radius); font-family: var(--mono); font-weight: 700; transition: transform .11s ease-in-out; will-change: transform; }
+.tile.new { animation: appear .16s ease-out .08s backwards; }
+.tile.merged { animation: merge .18s ease-out; z-index: 2; }
+@keyframes appear { from { opacity: 0; scale: .3; } }
+@keyframes merge { 50% { scale: 1.14; } }
+.fz-hint { text-align: center; margin-top: 14px; font-size: .85rem; }
+
+/* Couleurs des tuiles : dégradé d'une teinte sobre selon la valeur */
+.tile { color: var(--text); }
+.tile.v2 { background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+.tile.v4 { background: color-mix(in srgb, var(--accent) 18%, var(--surface-2)); }
+.tile.v8 { background: color-mix(in srgb, #e8a33d 55%, var(--surface-2)); color: #fff; }
+.tile.v16 { background: color-mix(in srgb, #e0803a 70%, var(--surface-2)); color: #fff; }
+.tile.v32 { background: color-mix(in srgb, #d9603b 80%, var(--surface-2)); color: #fff; }
+.tile.v64 { background: #cf4436; color: #fff; }
+.tile.v128 { background: color-mix(in srgb, #d8b84a 85%, var(--surface-2)); color: #fff; }
+.tile.v256 { background: #d1a93a; color: #fff; }
+.tile.v512 { background: #c79a2a; color: #fff; }
+.tile.v1024 { background: #6f9e48; color: #fff; }
+.tile.v2048 { background: #3f8f6e; color: #fff; box-shadow: 0 0 24px #3f8f6e88; }
+.tile.vbig { background: #3a5fa8; color: #fff; }

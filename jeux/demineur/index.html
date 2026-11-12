@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Démineur · Epure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../commun/css/base.css?v=2">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="../../commun/css/themes.css?v=2">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="../../" title="Retour à Epure"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Démineur</a>
+        <div class="spacer"></div>
+        <a class="icon-btn hidden" id="account-btn" href="../../pages/account.html" title="Compte"><i data-icon="circle-user"></i></a>
+        <button class="icon-btn" data-action="toggle-sound" id="sound-btn" title="Son"></button>
+        <button class="icon-btn" data-action="open-help" title="Aide"><i data-icon="circle-help"></i></button>
+        <a class="icon-btn" href="../../pages/stats.html" title="Statistiques"><i data-icon="chart-column"></i></a>
+        <button class="icon-btn" data-action="open-settings" title="Thème & options"><i data-icon="palette"></i></button>
+    </header>
+
+    <div class="app">
+        <!-- ============ MENU DES MODES ============ -->
+        <nav class="side" id="side">
+            <p class="section-title">Modes</p>
+            <button class="mode-item" data-mode="classic"><i data-icon="target"></i><span>Classique</span></button>
+            <button class="mode-item" data-mode="puzzles"><i data-icon="puzzle"></i><span>Puzzles</span></button>
+            <button class="mode-item" data-mode="mega"><i data-icon="shapes"></i><span>MegaMines</span></button>
+            <button class="mode-item" data-mode="rainbow"><i data-icon="rainbow"></i><span>Arc-en-ciel</span></button>
+            <p class="section-title">Contre la montre</p>
+            <button class="mode-item" data-mode="economy"><i data-icon="coins"></i><span>Économie</span></button>
+            <button class="mode-item" data-mode="blitz"><i data-icon="zap"></i><span>Blitz</span></button>
+            <button class="mode-item" data-mode="survival"><i data-icon="shield"></i><span>Survie</span></button>
+            <p class="section-title">En ligne</p>
+            <button class="mode-item" data-mode="duel"><i data-icon="swords"></i><span>Duel 1v1</span></button>
+        </nav>
+
+        <main class="content">
+            <!-- ============ PANNEAU DE CONFIGURATION ============ -->
+            <section id="screen-setup" class="screen active">
+                <div class="setup card">
+                    <div class="setup-head">
+                        <span class="setup-icon" id="setup-icon"></span>
+                        <div>
+                            <h2 id="setup-title"></h2>
+                            <p class="muted" id="setup-desc"></p>
+                        </div>
+                    </div>
+                    <div id="setup-body"></div>
+                    <div class="setup-best muted" id="setup-best"></div>
+                    <button class="btn primary block" data-action="play" id="play-btn"><i data-icon="play"></i> Jouer</button>
+                </div>
+            </section>
+
+            <!-- ============ PUZZLES ============ -->
+            <section id="screen-puzzles" class="screen">
+                <div class="pz-head">
+                    <div>
+                        <h2>Puzzles</h2>
+                        <p class="muted">Chaque grille se résout par pure logique. Zéro hasard, garanti par le solveur.</p>
+                    </div>
+                    <div class="pz-progress"><b id="pz-count">0/0</b><span class="muted">résolus</span></div>
+                </div>
+                <div class="tabs" id="pz-tabs"></div>
+                <p class="muted pz-chapter-desc" id="pz-desc"></p>
+                <div class="pz-grid" id="pz-grid"></div>
+            </section>
+
+            <!-- ============ JEU ============ -->
+            <section id="screen-game" class="screen">
+                <div class="hud">
+                    <button class="icon-btn" data-action="quit" title="Retour (Échap)"><i data-icon="arrow-left"></i></button>
+                    <div class="hud-title" id="hud-title"></div>
+                    <div class="hud-stats">
+                        <div class="chip" title="Mines restantes"><i data-icon="bomb"></i><b id="hud-mines">0</b></div>
+                        <div class="chip" id="chip-time" title="Temps"><i data-icon="timer"></i><b id="hud-time">0:00</b></div>
+                        <div class="chip hidden" id="chip-lives" title="Boucliers"><i data-icon="shield"></i><b id="hud-lives"></b></div>
+                        <div class="chip hidden" id="chip-score" title="Score"><i data-icon="star"></i><b id="hud-score">0</b></div>
+                        <div class="chip hidden" id="chip-opp" title="Progression de l'adversaire"><i data-icon="swords"></i><b id="hud-opp">0 %</b></div>
+                        <div class="chip hidden" id="chip-coins" title="Pièces"><i data-icon="coins"></i><b id="hud-coins">0</b></div>
+                    </div>
+                    <div class="hud-actions">
+                        <button class="icon-btn" data-action="hint" id="hint-btn" title="Indice (H)"><i data-icon="lightbulb"></i></button>
+                        <button class="icon-btn" data-action="flag-tool" id="flag-tool" title="Mode drapeau (F)"><i data-icon="flag"></i></button>
+                        <button class="icon-btn" data-action="zoom-out" title="Dézoomer (-)"><i data-icon="zoom-out"></i></button>
+                        <button class="icon-btn" data-action="zoom-in" title="Zoomer (+)"><i data-icon="zoom-in"></i></button>
+                        <button class="icon-btn" data-action="restart" title="Recommencer (R)"><i data-icon="rotate-ccw"></i></button>
+                    </div>
+                </div>
+                <div class="notice hidden" id="notice"></div>
+                <div class="tray hidden" id="tray"></div>
+                <div class="board-wrap" id="board-wrap">
+                    <div class="board" id="board" role="grid" aria-label="Plateau"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============ MODALES ============ -->
+    <div class="modal hidden" id="modal">
+        <div class="modal-card">
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
+            <div class="modal-stars" id="modal-stars"></div>
+            <div id="modal-extra"></div>
+            <div class="modal-actions" id="modal-actions"></div>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="settings">
+        <div class="modal-card">
+            <h2>Thème</h2>
+            <div class="themes" id="themes"></div>
+            <label class="toggle"><input type="checkbox" id="opt-anim"><span class="sw"></span><div><b>Animations</b><small>Cascade d'ouverture, secousses</small></div></label>
+            <label class="toggle"><input type="checkbox" id="opt-vibrate"><span class="sw"></span><div><b>Vibrations</b><small>Sur mobile</small></div></label>
+            <div class="modal-actions"><button class="btn primary" data-action="close-modal">Fermer</button></div>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="help">
+        <div class="modal-card help">
+            <h2>Comment jouer</h2>
+            <ul>
+                <li><b>Clic gauche</b> : révéler une case.</li>
+                <li><b>Clic droit</b> ou <b>appui long</b> : drapeau.</li>
+                <li><b>Clic sur un chiffre</b> : si le bon nombre de drapeaux l'entoure, ouvre les autres voisines (chording).</li>
+                <li><b>MegaMines</b> : choisis une forme de drapeau dans la barre, puis clic droit pour la poser. Clic droit sur un drapeau posé le retire. <b>T</b> tourne la forme, <b>M</b> la retourne en miroir.</li>
+                <li><b>Arc-en-ciel</b> : les chiffres sont des couleurs, et la correspondance change à chaque partie. À toi de la retrouver.</li>
+                <li><b>Clavier</b> : flèches, Espace révéler, F drapeau, H indice, R recommencer, +/- zoom, Échap retour.</li>
+            </ul>
+            <div class="modal-actions"><button class="btn primary" data-action="close-modal">Compris</button></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="../../commun/js/config.js?v=2"></script>
+    <script src="../../commun/js/i18n.js?v=2"></script>
+    <script src="../../commun/js/ui.js?v=2"></script>
+    <script src="../../commun/js/online.js?v=2"></script>
+    <script src="solver.js?v=2"></script>
+    <script src="puzzles.js?v=2"></script>
+    <script src="game.js?v=2"></script>
+</body>
+</html>
