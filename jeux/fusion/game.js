@@ -235,7 +235,7 @@ function tick() {
 // ==================== Navigation ====================
 function selectMode(m) {
     currentMode = m; store.set('fusionMode', m);
-    $$('.mode-item').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+    $$('.mode-item[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
     const M = MODES[m];
     $('#setup-icon').innerHTML = icon(M.icon);
     $('#setup-title').textContent = M.title;
@@ -273,7 +273,7 @@ function init() {
         if (a && ACTIONS[a.dataset.action]) ACTIONS[a.dataset.action]();
         if (e.target.classList.contains('modal') && e.target.id !== 'modal') closeModals();
     });
-    $$('.mode-item').forEach(b => b.onclick = () => selectMode(b.dataset.mode));
+    $$('.mode-item[data-mode]').forEach(b => b.onclick = () => selectMode(b.dataset.mode));
     document.addEventListener('keydown', e => {
         if (!$('#screen-game').classList.contains('active') || modalOpen()) return;
         const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;

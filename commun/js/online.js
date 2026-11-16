@@ -41,6 +41,7 @@ const Online = {
             } catch { this.username = 'joueur'; }
         }
         this.emit();
+        if (user) this.syncLocal().then(n => { if (n) toast(`${n} parties locales envoyées sur ton compte`, 'cloud-upload'); }).catch(() => {});
     },
     onChange(fn) { this.listeners.push(fn); fn(this); },
     emit() { this.listeners.forEach(fn => { try { fn(this); } catch (e) { console.error(e); } }); },
@@ -73,18 +74,36 @@ const Online = {
         const { error } = await this.client.from('games').insert(row);
         if (error) console.warn('Sauvegarde en ligne impossible :', error.message);
     },
-    // Envoie l'historique local la première fois qu'on se connecte sur cet appareil
+    // Envoie sur le compte les parties jouées hors connexion sur ce navigateur (une seule fois, à un seul compte)
     async syncLocal() {
         if (!this.user) return 0;
-        const key = 'synced_' + this.user.id;
-        if (store.get(key, false)) return 0;
-        const rows = Stats.all().map(e => ({ game: e.game, mode: e.mode, sub: e.sub == null ? null : String(e.sub), won: !!e.won, time: e.time ?? null, score: e.score ?? null, created_at: new Date(e.date).toISOString() }));
+        const all = Stats.all();
+        // Ancienne version : l'historique a déjà été envoyé, on le marque sans le renvoyer
+        const legacy = Object.keys(localStorage).filter(k => k.startsWith('arc_synced_'));
+        if (legacy.length) { all.forEach(e => { if (!e.uid) e.uid = 'ancien'; }); store.set('history', all); legacy.forEach(k => localStorage.removeItem(k)); return 0; }
+        const todo = all.filter(e => !e.uid);
+        if (!todo.length) return 0;
+        const rows = todo.map(e => ({ game: e.game, mode: e.mode, sub: e.sub == null ? null : String(e.sub), won: !!e.won, time: e.time ?? null, score: e.score ?? null, created_at: new Date(e.date).toISOString() }));
         for (let i = 0; i < rows.length; i += 500) {
             const { error } = await this.client.from('games').insert(rows.slice(i, i + 500));
             if (error) { console.warn(error.message); return 0; }
         }
-        store.set(key, true);
+        todo.forEach(e => { e.uid = this.user.id; });
+        store.set('history', all);
         return rows.length;
+    },
+    // Historique du compte connecté, au même format que Stats.all()
+    async myGames() {
+        if (!this.client || !this.user) return null;
+        const out = [];
+        for (let from = 0; ; from += 1000) {
+            const { data, error } = await this.client.from('games').select('game,mode,sub,won,time,score,created_at')
+                .eq('user_id', this.user.id).order('created_at').range(from, from + 999);
+            if (error) { console.warn(error.message); return null; }
+            data.forEach(r => out.push({ game: r.game, mode: r.mode, sub: r.sub, won: r.won, time: r.time, score: r.score, date: Date.parse(r.created_at) }));
+            if (data.length < 1000) break;
+        }
+        return out;
     },
     async leaderboard(game, mode, sub, kind) {
         if (!this.client) return [];
@@ -93,6 +112,10 @@ const Online = {
             q = sub == null ? q.is('sub', null) : q.eq('sub', String(sub));
             const { data } = await q; return data || [];
         }
+        if (kind === 'wins') {
+            const { data } = await this.client.from('leaderboard_wins').select('username,wins,played').eq('game', game).eq('mode', mode).gt('wins', 0).order('wins', { ascending: false }).limit(10);
+            return data || [];
+        }
         const { data } = await this.client.from('leaderboard_score').select('username,best_score,played').eq('game', game).eq('mode', mode).order('best_score', { ascending: false }).limit(10);
         return data || [];
     },
@@ -100,7 +123,7 @@ const Online = {
 
 // Chaque partie enregistrée localement part aussi en ligne si on est connecté
 const _record = Stats.record.bind(Stats);
-Stats.record = entry => { _record(entry); Online.saveGame(entry); };
+Stats.record = entry => { _record(Online.user ? Object.assign({ uid: Online.user.id }, entry) : entry); Online.saveGame(entry); };
 
 // Bouton compte dans la barre du haut (élément #account-btn)
 Online.onChange(o => {

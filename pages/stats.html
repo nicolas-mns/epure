@@ -6,8 +6,8 @@
     <title>Statistiques · Epure</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../commun/css/base.css?v=2">
-    <link rel="stylesheet" href="../commun/css/themes.css?v=2">
+    <link rel="stylesheet" href="../commun/css/base.css?v=8">
+    <link rel="stylesheet" href="../commun/css/themes.css?v=8">
     <style>
         main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 60px; }
         h1 { font-size: 1.6rem; margin-bottom: 4px; }
@@ -31,8 +31,8 @@
         .online { display: flex; gap: 14px; align-items: flex-start; padding: 18px; margin-bottom: 28px; }
         .online p { color: var(--muted); font-size: .9rem; line-height: 1.5; margin-top: 4px; }
         .row-actions { display: flex; justify-content: flex-end; }
-        .gtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
-        .gtab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .gtabs { display: flex; flex-wrap: wrap; gap: 2px 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+        .gtab { display: flex; align-items: center; gap: 6px; padding: 8px 10px; font-size: .88rem; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; }
         .gtab:hover { color: var(--text); }
         .gtab.active { color: var(--text); border-bottom-color: var(--text); }
         .lb-controls { margin-bottom: 10px; }
@@ -46,7 +46,7 @@
         <a class="brand" href="../"><i data-icon="gamepad-2"></i> EPURE <span class="sep">/</span> Statistiques</a>
         <div class="spacer"></div>
         <a class="icon-btn hidden" id="account-btn" href="account.html" title="Compte"><i data-icon="circle-user"></i></a>
-        <a class="icon-btn" href="../jeux/demineur/" title="Démineur"><i data-icon="bomb"></i></a>
+        
     </header>
     <main>
         <h1>Statistiques</h1>
@@ -79,32 +79,34 @@
 
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-    <script src="../commun/js/config.js?v=2"></script>
-    <script src="../commun/js/i18n.js?v=2"></script>
-    <script src="../commun/js/ui.js?v=2"></script>
-    <script src="../commun/js/online.js?v=2"></script>
+    <script src="../commun/js/config.js?v=8"></script>
+    <script src="../commun/js/i18n.js?v=8"></script>
+    <script src="../commun/js/ui.js?v=8"></script>
+    <script src="../commun/js/online.js?v=8"></script>
+    <script src="../commun/js/catalogue.js?v=8"></script>
     <script>
-        const GAMES = {
-            demineur: { name: 'Démineur', icon: 'bomb', href: '../jeux/demineur/', modes: {
-                classic: ['Classique', 'target'], puzzle: ['Puzzles', 'puzzle'], mega: ['MegaMines', 'shapes'], rainbow: ['Arc-en-ciel', 'rainbow'],
-                economy: ['Économie', 'coins'], blitz: ['Blitz', 'zap'], survival: ['Survie', 'shield'], duel: ['Duel', 'swords'] },
-                unit: { economy: 'grilles', blitz: 'pts', survival: 'vagues' },
-                lb: [['classic', 'beginner', 'time', 'Classique · Débutant'], ['classic', 'intermediate', 'time', 'Classique · Intermédiaire'], ['classic', 'expert', 'time', 'Classique · Expert'],
+        // Jeux, modes et unités viennent du catalogue (commun/js/catalogue.js).
+        // Classements : détaillés pour les premiers jeux, générés automatiquement pour les autres.
+        const LB = {
+            demineur: [['classic', 'beginner', 'time', 'Classique · Débutant'], ['classic', 'intermediate', 'time', 'Classique · Intermédiaire'], ['classic', 'expert', 'time', 'Classique · Expert'],
                     ['rainbow', 'beginner', 'time', 'Arc-en-ciel · Débutant'], ['mega', null, 'time', 'MegaMines'],
-                    ['blitz', null, 'score', 'Blitz (points)'], ['economy', null, 'score', 'Économie (grilles)'], ['survival', null, 'score', 'Survie (vagues)'], ['duel', null, 'wins', 'Duels gagnés']] },
-            blocs: { name: 'Blocs', icon: 'blocks', href: '../jeux/blocs/', modes: {
-                marathon: ['Marathon', 'mountain'], sprint: ['Sprint 40', 'flag'], ultra: ['Ultra 2 min', 'timer'], rising: ['Montée', 'arrow-up-from-line'], versus: ['Duel 1v1', 'swords'] },
-                unit: { marathon: 'pts', ultra: 'pts', rising: 'lignes' },
-                lb: [['sprint', null, 'time', 'Sprint 40 lignes'], ['marathon', null, 'score', 'Marathon (points)'], ['ultra', null, 'score', 'Ultra 2 min (points)'], ['rising', null, 'score', 'Montée (lignes)'], ['versus', null, 'wins', 'Duels gagnés']] },
-            serpent: { name: 'Serpent', icon: 'worm', href: '../jeux/serpent/', modes: {
-                classic: ['Classique', 'square'], wrap: ['Sans murs', 'infinity'], maze: ['Labyrinthe', 'brick-wall'], timed: ['Chrono 90 s', 'timer'] },
-                unit: { classic: 'pts', wrap: 'pts', maze: 'pts', timed: 'pts' },
-                lb: [['classic', null, 'score', 'Classique'], ['wrap', null, 'score', 'Sans murs'], ['maze', null, 'score', 'Labyrinthe'], ['timed', null, 'score', 'Chrono 90 s']] },
-            fusion: { name: 'Fusion', icon: 'grid-2x2', href: '../jeux/fusion/', modes: {
-                classic: ['Classique 4×4', 'grid-2x2'], big: ['Grand 5×5', 'grid-3x3'], mini: ['Mini 3×3', 'square'], timed: ['Chrono 3 min', 'timer'], blocks: ['Obstacles', 'square-x'] },
-                unit: { classic: 'pts', big: 'pts', mini: 'pts', timed: 'pts', blocks: 'pts' },
-                lb: [['classic', null, 'score', 'Classique 4×4'], ['big', null, 'score', 'Grand 5×5'], ['mini', null, 'score', 'Mini 3×3'], ['timed', null, 'score', 'Chrono 3 min'], ['blocks', null, 'score', 'Obstacles']] },
+                    ['blitz', null, 'score', 'Blitz (points)'], ['economy', null, 'score', 'Économie (grilles)'], ['survival', null, 'score', 'Survie (vagues)'], ['duel', null, 'wins', 'Duels gagnés']],
+            blocs: [['sprint', null, 'time', 'Sprint 40 lignes'], ['marathon', null, 'score', 'Marathon (points)'], ['ultra', null, 'score', 'Ultra 2 min (points)'], ['rising', null, 'score', 'Montée (lignes)'], ['versus', null, 'wins', 'Duels gagnés']],
+            serpent: [['classic', null, 'score', 'Classique'], ['wrap', null, 'score', 'Sans murs'], ['maze', null, 'score', 'Labyrinthe'], ['timed', null, 'score', 'Chrono 90 s'], ['bot', null, 'wins', 'Victoires contre le bot'], ['duel', null, 'wins', 'Duels gagnés']],
+            fusion: [['classic', null, 'score', 'Classique 4×4'], ['big', null, 'score', 'Grand 5×5'], ['mini', null, 'score', 'Mini 3×3'], ['timed', null, 'score', 'Chrono 3 min'], ['blocks', null, 'score', 'Obstacles'], ['bot', null, 'wins', 'Victoires contre le bot'], ['duel', null, 'wins', 'Duels gagnés']],
+            elan: [...[1, 10, 25, 50, 75, 100].map(n => ['niveaux', String(n), 'time', 'Niveau ' + n]), ['duel', null, 'wins', 'Duels gagnés']],
+            gravite: [...[1, 10, 25, 50, 75, 100].map(n => ['niveaux', String(n), 'time', 'Niveau ' + n]), ['duel', null, 'wins', 'Duels gagnés']],
+            circuit: [...Object.entries({ anneau: 'Anneau', epingle: 'Épingle', serpentin: 'Serpentin' }).map(([k, n]) => ['chrono', k, 'time', 'Contre la montre · ' + n]), ['course', null, 'wins', 'Courses gagnées'], ['duel', null, 'wins', 'Duels gagnés']],
+            labyrinthe: [...['facile', 'moyen', 'difficile'].map((k, i) => ['classic', k, 'time', 'Classique · ' + ['Facile', 'Moyen', 'Difficile'][i]]), ['brouillard', 'moyen', 'time', 'Brouillard · Moyen'], ['duel', null, 'wins', 'Duels gagnés']],
+            patience: [['klondike', '1', 'time', 'Klondike · tirage 1'], ['klondike', '3', 'time', 'Klondike · tirage 3'], ['freecell', null, 'time', 'FreeCell'], ['duel', null, 'wins', 'Duels gagnés']],
         };
+        const GAMES = {};
+        for (const [id, g] of Object.entries(CATALOGUE)) {
+            const modes = {}, unit = {};
+            for (const [k, [title, ic, kind, u]] of Object.entries(g.modes)) { modes[k] = [title, ic]; if (kind === 'score') unit[k] = u || 'pts'; }
+            const lb = LB[id] || Object.entries(g.modes).map(([k, [title, , kind]]) => [k, null, kind === 'win' ? 'wins' : kind, title]);
+            GAMES[id] = { name: g.name, icon: g.icon, href: `../jeux/${id}/`, modes, unit, lb };
+        }
         const SUB = { beginner: 'Débutant', intermediate: 'Intermédiaire', expert: 'Expert', custom: 'Perso' };
         let game = store.get('statsGame', 'demineur');
         if (!GAMES[game]) game = 'demineur';
@@ -115,9 +117,12 @@
             $$('#game-tabs .gtab').forEach(b => b.onclick = () => { game = b.dataset.g; store.set('statsGame', game); renderTabs(); render(); setupLb(); });
         }
 
+        // Connecté : l'historique vient du compte ; sinon, du navigateur
+        let source = null;
+        const history = () => source || Stats.all();
         function render() {
             const G = GAMES[game], U = G.unit;
-            const all = Stats.all().filter(e => e.game === game && G.modes[e.mode]);
+            const all = history().filter(e => e.game === game && G.modes[e.mode]);
             const wins = all.filter(e => e.won).length;
             const time = all.reduce((a, e) => a + (e.time || 0), 0);
             let streak = 0, best = 0;
@@ -167,19 +172,20 @@
         async function renderLb() {
             const [mode, sub, kind] = GAMES[game].lb[+$('#lb-mode').value];
             $('#lb').innerHTML = '<div class="empty">Chargement…</div>';
-            const rows = await Online.leaderboard(game, mode, sub, kind === 'wins' ? 'time' : kind);
-            if (kind === 'wins') rows.sort((a, b) => b.wins - a.wins);
+            const rows = await Online.leaderboard(game, mode, sub, kind);
             if (!rows.length) { $('#lb').innerHTML = '<div class="empty">Personne pour l\'instant. À toi de jouer.</div>'; return; }
-            const val = r => kind === 'time' ? fmtT(r.best_time) : kind === 'wins' ? r.wins : r.best_score.toLocaleString('fr-FR');
+            const val = r => kind === 'time' ? fmtT(r.best_time) : kind === 'wins' ? `${r.wins} / ${r.played}` : r.best_score.toLocaleString('fr-FR');
             const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-            $('#lb').innerHTML = `<table><thead><tr><th>#</th><th>Joueur</th><th class="num">${kind === 'time' ? 'Meilleur temps' : kind === 'wins' ? 'Victoires' : 'Record'}</th></tr></thead><tbody>${rows.map((r, i) => `<tr class="${r.username === Online.username ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${esc(r.username)}</td><td class="num">${val(r)}</td></tr>`).join('')}</tbody></table>`;
+            $('#lb').innerHTML = `<table><thead><tr><th>#</th><th>Joueur</th><th class="num">${kind === 'time' ? 'Meilleur temps' : kind === 'wins' ? 'Victoires / parties' : 'Record'}</th></tr></thead><tbody>${rows.map((r, i) => `<tr class="${r.username === Online.username ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${esc(r.username)}</td><td class="num">${val(r)}</td></tr>`).join('')}</tbody></table>`;
         }
         setupLb();
         Online.onChange(o => {
             if (!o.configured) { $('#online-title').textContent = 'Stats locales'; $('#online-text').textContent = 'Les stats restent dans ce navigateur. Le mode en ligne n\'est pas encore activé sur ce site.'; return; }
             $('#lb-section').classList.remove('hidden');
             setupLb();
-            if (o.user) { $('#online-title').textContent = `Connecté : ${o.username || ''}`; $('#online-text').innerHTML = 'Tes nouvelles parties sont enregistrées sur ton compte et comptent dans le classement.'; }
+            if (o.user) o.myGames().then(rows => { if (rows) { source = rows; render(); $('#reset').classList.add('hidden'); } });
+            else { source = null; render(); $('#reset').classList.remove('hidden'); }
+            if (o.user) { $('#online-title').textContent = `Connecté : ${o.username || ''}`; $('#online-text').innerHTML = 'Ces stats viennent de ton compte : elles sont les mêmes sur tous tes appareils.'; }
             else { $('#online-title').textContent = 'Pas connecté'; $('#online-text').innerHTML = '<a href="account.html"><b>Connecte-toi</b></a> pour apparaître dans le classement et jouer en duel.'; }
         });
         $('#reset').onclick = () => { if (confirm(`Effacer l'historique local de ${GAMES[game].name} ?`)) { store.set('history', Stats.all().filter(e => e.game !== game)); render(); } };

@@ -291,7 +291,7 @@ function updateStats() {
 // ==================== Navigation ====================
 function selectMode(m) {
     currentMode = m; store.set('serpentMode', m);
-    $$('.mode-item').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+    $$('.mode-item[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
     const M = MODES[m];
     $('#setup-icon').innerHTML = icon(M.icon);
     $('#setup-title').textContent = M.title;
@@ -328,7 +328,7 @@ function init() {
         if (a && ACTIONS[a.dataset.action]) ACTIONS[a.dataset.action]();
         if (e.target.classList.contains('modal') && e.target.id !== 'modal') ACTIONS['close-modal']();
     });
-    $$('.mode-item').forEach(b => b.onclick = () => selectMode(b.dataset.mode));
+    $$('.mode-item[data-mode]').forEach(b => b.onclick = () => selectMode(b.dataset.mode));
     $$('#seg-speed button').forEach(b => b.onclick = () => { cfg.speed = b.dataset.speed; saveCfg(); selectMode(currentMode); });
     document.addEventListener('keydown', e => {
         if (!$('#screen-game').classList.contains('active') || modalOpen()) return;

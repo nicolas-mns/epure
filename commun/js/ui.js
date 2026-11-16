@@ -180,6 +180,15 @@ function toast(msg, ic, ms = 2200) {
     clearTimeout(toast.tid); toast.tid = setTimeout(() => el.classList.add('hidden'), ms);
 }
 
+// Écran de fin de partie (tous les jeux) : R ou Entrée = « Rejouer »
+document.addEventListener('keydown', e => {
+    if (!['KeyR', 'Enter', 'NumpadEnter'].includes(e.code) || e.ctrlKey || e.metaKey) return;
+    const m = document.getElementById('modal');
+    if (!m || m.classList.contains('hidden')) return;
+    const b = [...m.querySelectorAll('#modal-actions button')].find(x => /Rejouer|Play again|Nouvelle partie|Recommencer/i.test(x.textContent));
+    if (b) { e.preventDefault(); e.stopImmediatePropagation(); b.click(); }
+}, true);
+
 const closeModals = () => $$('.modal').forEach(m => m.classList.add('hidden'));
 const modalOpen = () => $$('.modal').some(m => !m.classList.contains('hidden'));
 
@@ -197,22 +206,23 @@ const Stats = {
     all() { return store.get('history', []); },
 };
 
-// Menu des jeux dans la barre du haut, sur toutes les pages
-const GAMES = [
-    { id: 'demineur', name: 'Démineur', icon: 'bomb' },
-    { id: 'blocs', name: 'Blocs', icon: 'blocks' },
-    { id: 'serpent', name: 'Serpent', icon: 'worm' },
-    { id: 'fusion', name: 'Fusion', icon: 'grid-2x2' },
-];
+// Menu « Jeux » dans la barre du haut : un bouton qui ouvre la liste de tous les jeux (catalogue.js)
 function addGameNav() {
     const brand = document.querySelector('.topbar .brand');
-    if (!brand || document.querySelector('.game-nav')) return;
+    if (!brand || document.querySelector('.game-nav') || typeof CATALOGUE === 'undefined') return;
     const root = brand.getAttribute('href').replace(/\/?$/, '/');
     const cur = (location.pathname.match(/\/jeux\/([^/]+)/) || [])[1];
-    const nav = document.createElement('nav');
-    nav.className = 'game-nav';
-    nav.innerHTML = GAMES.map(g => `<a href="${root}jeux/${g.id}/" class="${g.id === cur ? 'current' : ''}" title="${g.name}">${icon(g.icon)}<span>${g.name}</span></a>`).join('');
-    brand.after(nav);
+    const wrap = document.createElement('div');
+    wrap.className = 'game-nav';
+    wrap.innerHTML = `<button class="game-nav-btn" aria-expanded="false">${icon('layout-grid')}<span>Jeux</span>${icon('chevron-down')}</button>
+        <div class="game-menu hidden">${CATEGORIES.map(([cat, label, ic]) => `<div class="gm-cat"><p>${icon(ic)}<span>${label}</span></p>
+            ${Object.entries(CATALOGUE).filter(([, g]) => g.cat === cat).map(([id, g]) => `<a href="${root}jeux/${id}/" class="${id === cur ? 'current' : ''}">${icon(g.icon)}<span>${g.name}</span></a>`).join('')}</div>`).join('')}</div>`;
+    brand.after(wrap);
+    const btn = wrap.querySelector('.game-nav-btn'), menu = wrap.querySelector('.game-menu');
+    const toggle = open => { menu.classList.toggle('hidden', !open); btn.setAttribute('aria-expanded', open); };
+    btn.onclick = e => { e.stopPropagation(); toggle(menu.classList.contains('hidden')); };
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) toggle(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') toggle(false); });
 }
 
 // Initialisation commune

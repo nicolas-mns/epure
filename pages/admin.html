@@ -6,8 +6,8 @@
     <title>Administration · Epure</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../commun/css/base.css?v=2">
-    <link rel="stylesheet" href="../commun/css/themes.css?v=2">
+    <link rel="stylesheet" href="../commun/css/base.css?v=8">
+    <link rel="stylesheet" href="../commun/css/themes.css?v=8">
     <style>
         main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
         h1 { font-size: 1.6rem; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
@@ -65,19 +65,16 @@
 
     <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-    <script src="../commun/js/config.js?v=2"></script>
-    <script src="../commun/js/i18n.js?v=2"></script>
-    <script src="../commun/js/ui.js?v=2"></script>
-    <script src="../commun/js/online.js?v=2"></script>
+    <script src="../commun/js/config.js?v=8"></script>
+    <script src="../commun/js/i18n.js?v=8"></script>
+    <script src="../commun/js/ui.js?v=8"></script>
+    <script src="../commun/js/online.js?v=8"></script>
+    <script src="../commun/js/catalogue.js?v=8"></script>
     <script>
         applyTheme(settings.theme);
         hydrateIcons();
-        const MODES = {
-            Démineur: { game: 'demineur', modes: { classic: 'Classique', puzzle: 'Puzzles', mega: 'MegaMines', rainbow: 'Arc-en-ciel', economy: 'Économie', blitz: 'Blitz', survival: 'Survie', duel: 'Duel' } },
-            Blocs: { game: 'blocs', modes: { marathon: 'Marathon', sprint: 'Sprint 40', ultra: 'Ultra', rising: 'Montée', versus: 'Duel' } },
-            Serpent: { game: 'serpent', modes: { classic: 'Classique', wrap: 'Sans murs', maze: 'Labyrinthe', timed: 'Chrono' } },
-            Fusion: { game: 'fusion', modes: { classic: 'Classique', big: 'Grand 5×5', mini: 'Mini 3×3', timed: 'Chrono', blocks: 'Obstacles' } },
-        };
+        // Tous les jeux et leurs modes, depuis le catalogue (commun/js/catalogue.js)
+        const MODES = Object.fromEntries(Object.entries(CATALOGUE).map(([id, g]) => [g.name, { game: id, modes: Object.fromEntries(Object.entries(g.modes).map(([k, m]) => [k, m[0]])) }]));
         let filter = 'all';
         let users = [];
         const date = d => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -105,7 +102,7 @@
             const counts = {};
             g.forEach(x => { const key = x.game + ':' + x.mode; counts[key] = (counts[key] || 0) + 1; });
             const max = Math.max(1, ...Object.values(counts));
-            $('#modes').innerHTML = Object.entries(MODES).map(([name, { game, modes }]) => `<p class="bar-game">${name}</p>` + Object.keys(modes).map(m => { const n = counts[game + ':' + m] || 0; return `<div class="bar-row"><span>${modes[m]}</span><span class="bar"><i style="width:${n / max * 100}%"></i></span><span class="num">${n}</span></div>`; }).join('')).join('');
+            $('#modes').innerHTML = Object.entries(MODES).filter(([, { game }]) => Object.keys(counts).some(k => k.startsWith(game + ':'))).map(([name, { game, modes }]) => `<p class="bar-game">${name}</p>` + Object.keys(modes).map(m => { const n = counts[game + ':' + m] || 0; return `<div class="bar-row"><span>${modes[m]}</span><span class="bar"><i style="width:${n / max * 100}%"></i></span><span class="num">${n}</span></div>`; }).join('')).join('') || `<p class="muted">Aucune partie pour l'instant.</p>`;
             renderUsers();
         }
 

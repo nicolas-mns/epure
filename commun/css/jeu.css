@@ -1,0 +1,20 @@
+/* ==================== Moteur commun : compléments à shell.css ==================== */
+.well canvas { touch-action: none; outline: none; border-radius: 6px; }
+.jtouch { display: none; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 520px; margin: 14px auto 0; }
+.jtouch button { min-width: 64px; height: 58px; padding: 0 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 6px; touch-action: none; user-select: none; -webkit-user-select: none; font-weight: 600; font-size: .85rem; }
+.jtouch button.on { background: var(--surface-3); border-color: var(--muted); }
+.jtouch svg { width: 22px; height: 22px; }
+@media (pointer: coarse) { .jtouch { display: flex; } .jtouch.hidden { display: none; } }
+.duel-join { display: flex; gap: 8px; margin-top: 10px; }
+.duel-join input { flex: 1; min-width: 0; height: 40px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); text-transform: uppercase; font-family: var(--mono); letter-spacing: .2em; }
+.duel-note { font-size: .8rem; margin-top: 10px; }
+.modal-title svg, #modal-title svg { vertical-align: -3px; margin-right: 8px; }
+.setup { max-width: 620px; margin: 0 auto; }
+
+/* Grille de choix des niveaux (Élan, Gravité) */
+.lvl-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 8px; }
+.lvl-grid button { height: 34px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); font-family: var(--mono); font-size: .8rem; font-weight: 600; }
+.lvl-grid button.done { background: color-mix(in srgb, var(--ok) 22%, var(--surface-2)); }
+.lvl-grid button.active { border-color: var(--text); background: var(--surface-3); }
+.lvl-grid button.locked { opacity: .3; cursor: not-allowed; }
+.lvl-note { font-size: .8rem; margin-bottom: 14px; }

@@ -113,10 +113,16 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.8; flex-shrink: 0; }
 .icon-btn .crown svg { width: 14px; height: 14px; fill: currentColor; stroke-width: 1.5; }
 .topbar { overflow: visible; }
 
-/* Menu des jeux (barre du haut) */
-.game-nav { display: flex; gap: 2px; margin-left: 14px; }
-.game-nav a { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--radius); color: var(--muted); font-size: .85rem; font-weight: 500; }
-.game-nav a svg { width: 16px; height: 16px; }
-.game-nav a:hover { background: var(--surface-2); color: var(--text); }
-.game-nav a.current { color: var(--text); background: var(--surface-2); }
-@media (max-width: 760px) { .game-nav a span { display: none; } .game-nav { margin-left: 6px; } }
+/* Menu « Jeux » (barre du haut) */
+.game-nav { position: relative; margin-left: 10px; }
+.game-nav-btn { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: var(--radius); color: var(--muted); font-weight: 600; font-size: .85rem; border: 1px solid var(--border); }
+.game-nav-btn:hover, .game-nav-btn[aria-expanded="true"] { color: var(--text); background: var(--surface-2); }
+.game-nav-btn svg { width: 16px; height: 16px; }
+.game-menu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; width: min(760px, calc(100vw - 32px)); display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.35); animation: rise .15s ease-out; }
+.gm-cat p { display: flex; align-items: center; gap: 6px; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 6px 6px; }
+.gm-cat p svg { width: 13px; height: 13px; }
+.gm-cat a { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: .88rem; color: var(--text); }
+.gm-cat a svg { width: 16px; height: 16px; color: var(--muted); }
+.gm-cat a:hover { background: var(--surface-2); }
+.gm-cat a.current { background: var(--surface-3); }
+@media (max-width: 760px) { .game-nav-btn span { display: none; } .game-menu { position: fixed; top: 60px; left: 16px; right: 16px; width: auto; max-height: calc(100vh - 80px); overflow: auto; } }
